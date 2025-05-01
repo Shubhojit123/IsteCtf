@@ -80,7 +80,8 @@ function App() {
             <li>Hackathon – May 15th</li>
             <li>Workshop – May 20</li>
             <li>Weekly Meeting – Fridays 5 PM</li>
-            <li>ISTEHITSC{Brut3F0rc3_Succ3ss}</li>
+           <li>ISTEHITSC{"Brut3F0rc3_Succ3ss"}</li>
+
           </ul>
         </div>
         <button
