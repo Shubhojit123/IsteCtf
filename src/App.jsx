@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import bcrypt from "bcryptjs";
 
 function App() {
   const [username, setUsername] = useState("");
@@ -6,44 +7,51 @@ function App() {
   const [error, setError] = useState("");
   const [isLog, setIsLog] = useState(false);
 
+  // Set up hashed users on first run
   useEffect(() => {
-    // Check localStorage for login state
-    const loggedIn = localStorage.getItem("isLog") === "true";
+    const usersInStorage = localStorage.getItem("users");
+    if (!usersInStorage) {
+      const plainUsers = [
+        { name: "hit", password: "tigger" },
+        { name: "admin", password: "computer" },
+        { name: "room", password: "family" },
+        { name: "rockman", password: "danielle" },
+        { name: "summer", password: "forever" },
+        { name: "root", password: "root" },
+        
+      ];
+      const hashedUsers = plainUsers.map((user) => ({
+        name: user.name,
+        hash: bcrypt.hashSync(user.password, 10),
+      }));
+      localStorage.setItem("users", JSON.stringify(hashedUsers));
+    }
+
+    // Check login
+    const isLogged = localStorage.getItem("isLog") === "true";
     const storedUser = localStorage.getItem("username");
-    if (loggedIn && storedUser) {
+    if (isLogged && storedUser) {
       setIsLog(true);
       setUsername(storedUser);
     }
   }, []);
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
 
-    const loginData = {
-      name: username,
-      password: password,
-    };
+    const users = JSON.parse(localStorage.getItem("users")) || [];
 
-    try {
-      const response = await fetch("http://localhost:8080/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(loginData),
-      });
+    const matched = users.find(
+      (user) => user.name === username && bcrypt.compareSync(password, user.hash)
+    );
 
-      const text = await response.text();
-
-      if (response.ok) {
-        setIsLog(true);
-        setError("");
-        localStorage.setItem("isLog", "true");
-        localStorage.setItem("username", username);
-      } else {
-        setError(text || "Invalid credentials");
-      }
-    } catch (err) {
-      console.error("Login error: ", err);
-      setError("Failed to connect to the server.");
+    if (matched) {
+      setIsLog(true);
+      setError("");
+      localStorage.setItem("isLog", "true");
+      localStorage.setItem("username", username);
+    } else {
+      setError("Invalid username or password");
     }
   };
 
@@ -56,11 +64,17 @@ function App() {
   };
 
   if (isLog) {
-    // Show Dashboard after login
     return (
       <div style={{ padding: "2rem", fontFamily: "Arial" }}>
         <h1>Welcome to ISTE Dashboard, {username} 👋</h1>
-        <div style={{ marginTop: "1rem", background: "#e0e0e0", padding: "1rem", borderRadius: "8px" }}>
+        <div
+          style={{
+            marginTop: "1rem",
+            background: "#e0e0e0",
+            padding: "1rem",
+            borderRadius: "8px",
+          }}
+        >
           <h3>📌 ISTE Updates</h3>
           <ul>
             <li>Hackathon – May 15th</li>
@@ -86,7 +100,6 @@ function App() {
     );
   }
 
-  // Show Login Page
   return (
     <div style={{ display: "flex", minHeight: "100vh", fontFamily: "Arial" }}>
       {/* Left Info */}
@@ -101,9 +114,11 @@ function App() {
           padding: "2rem",
         }}
       >
-        <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>ISTE Student Chapter</h1>
+        <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+          ISTE Student Chapter
+        </h1>
         <p>
-          Welcome to ISTE — a student club fostering innovation, leadership, and
+          Welcome to ISTE — a student scoity fostering innovation, leadership, and
           tech excellence.
         </p>
       </div>
@@ -138,7 +153,11 @@ function App() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              style={{ width: "100%", marginBottom: "1rem", padding: "0.5rem" }}
+              style={{
+                width: "100%",
+                marginBottom: "1rem",
+                padding: "0.5rem",
+              }}
             />
           </div>
           <div>
@@ -148,7 +167,11 @@ function App() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{ width: "100%", marginBottom: "1rem", padding: "0.5rem" }}
+              style={{
+                width: "100%",
+                marginBottom: "1rem",
+                padding: "0.5rem",
+              }}
             />
           </div>
           <button type="submit" style={{ width: "100%", padding: "0.5rem" }}>
