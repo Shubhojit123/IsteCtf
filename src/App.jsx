@@ -118,7 +118,7 @@ function App() {
           ISTE Student Chapter
         </h1>
         <p>
-          Welcome to ISTE — a student scoity fostering innovation, leadership, and
+          Welcome to ISTE — a student socity fostering innovation, leadership, and
           tech excellence.
         </p>
       </div>
